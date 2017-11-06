@@ -283,6 +283,7 @@ func TestServer_Reload_Vault(t *testing.T) {
 // Tests that the server will successfully reload its network connections,
 // upgrading from plaintext to TLS if the server's TLS configuration changes.
 func TestServer_Reload_TLSConnections(t *testing.T) {
+	t.Skip("depends on expiring old connections on TLS reload")
 	t.Parallel()
 	assert := assert.New(t)
 

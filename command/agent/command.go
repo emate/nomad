@@ -621,9 +621,18 @@ func (c *Command) handleReload(config *Config) *Config {
 	}
 
 	// Reloads configuration for an agent running in both client and server mode
-	err := c.agent.Reload(newConf)
+	err, reloadHTTPServer := c.agent.Reload(newConf)
 	if err != nil {
-		c.agent.logger.Printf("[ERR] agent: failed to reload the config: %v", err)
+		c.agent.logger.Printf("[ERR] agent: failed to reload agent configuration : %v", err)
+	}
+
+	// Handle configuration changes that impact the http server. if needed,
+	// restart the http server to import changes.
+	if reloadHTTPServer {
+		err = c.reloadHTTPServerOnConfigChange(newConf)
+		if err != nil {
+			c.Ui.Error(fmt.Sprintf("Error reloading http server: %s", err))
+		}
 	}
 
 	// If the configuration change is specific only to the server, handle it here
@@ -639,6 +648,24 @@ func (c *Command) handleReload(config *Config) *Config {
 	}
 
 	return newConf
+}
+
+func (c *Command) reloadHTTPServerOnConfigChange(newConfig *Config) error {
+	c.agent.logger.Println("[INFO] agent: Reloading HTTP server with new TLS configuration")
+	err := c.httpServer.Shutdown()
+	if err != nil {
+		return err
+	}
+
+	// TODO(chelsea) handle timing- wait until http server has fully shut down.
+	http, err := NewHTTPServer(c.agent, c.agent.config)
+	if err != nil {
+		c.agent.Shutdown()
+		return err
+	}
+	c.httpServer = http
+
+	return nil
 }
 
 // setupTelemetry is used ot setup the telemetry sub-systems
