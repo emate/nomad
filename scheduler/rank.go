@@ -230,7 +230,7 @@ OUTER:
 		// carefully.
 
 		// Score the fit normally otherwise
-		fitness := structs.ScoreFit(option.Node, util)
+		fitness := structs.ScoreFit(option.Node, util, false)
 		option.Score += fitness
 		iter.ctx.Metrics().ScoreNode(option.Node, "binpack", fitness)
 		return option
