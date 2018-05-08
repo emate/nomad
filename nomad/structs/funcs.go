@@ -183,7 +183,8 @@ func ScoreFit(node *Node, util *Resources) float64 {
 	// Invert so that the "maximized" total represents a high-value
 	// score. Because the floor is 20, we simply use that as an anchor.
 	// This means at a perfect fit, we return 18 as the score.
-	score := 20.0 - total
+	score := total
+	//score := 20.0 - total
 
 	// Bound the score, just in case
 	// If the score is over 18, that means we've overfit the node.
